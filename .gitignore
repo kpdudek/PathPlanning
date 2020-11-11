@@ -1,0 +1,10 @@
+logs.txt
+__pycache__/
+*.pyc
+.vscode/
+.VSCodeCounter/
+*.out
+.catkin_tools/
+build/
+devel/
+logs/
