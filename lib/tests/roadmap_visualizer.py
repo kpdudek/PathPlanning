@@ -1,35 +1,26 @@
 #!/usr/bin/env python
 """ A first template for a PID controller """
 import sys
-sys.path.insert(0,'.\\lib\\')
+sys.path.insert(0,'..\\..\\')
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import RoadmapBuilder
-import AStar as asp
+import lib.RoadmapBuilder as roadmap_builder
+import lib.AStar as asp
 import math
 import copy
 
 ################################################
 # Parameters
-size = 15
-obs_count = 30
-obs_len = 4
-obs_spread = size
-
-
-################################################
-
-# Matrix represnetation of the graph where:
-# 0 --> Q_free
-# 1 --> Q_collision
+size = 10
 graph = np.ones(shape=(size,size),dtype=int) 
 
 # Build a roadmap for the graph
 roadmap = roadmap_builder.RoadmapBuilder()
 roadmap.construct_square(size)
-roadmap.set_obstacles(size)
+# roadmap.set_obstacles(size)
+roadmap.clear_obstacles()
 roadmap.init_roadmap()
 roadmap.set_neighbors()
 

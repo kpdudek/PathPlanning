@@ -35,10 +35,10 @@ class PriorityQueue(object):
             member = self.queue[member_idx]
             
             if min_val == None:
-                min_val = member.key
+                min_val = member.cost
                 min_idx = member_idx
-            elif member.key < min_val:
-                min_val = member.key
+            elif member.cost < min_val:
+                min_val = member.cost
                 min_idx = member_idx
         
         min_extract = self.queue.pop(min_idx)

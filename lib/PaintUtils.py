@@ -90,7 +90,7 @@ class FusionColor(ElementColors):
 
 class PaintBrushes():
     def __init__(self):
-        pass
+        pass    
     def hollow_poly(self,color,width):
         pen = QPen()
         pen.setWidth(width)
@@ -109,6 +109,62 @@ class PaintBrushes():
 
         brush = QBrush()
         brush.setColor(QColor(color))
+        brush.setStyle(Qt.SolidPattern)
+
+        return pen,brush
+
+    def transparent_poly(self,color,width):
+        pen = QPen()
+        pen.setWidth(width)
+        pen.setColor(QColor(color))
+
+        brush = QBrush()
+        brush.setColor(QColor(color))
+        brush.setStyle(Qt.DiagCrossPattern)
+
+        return pen,brush
+
+    def connection_line(self):
+        pen = QPen()
+        pen.setWidth(1)
+        pen.setColor(QColor(self.star_gold['hex']))
+
+        brush = QBrush()
+        brush.setColor(QColor(self.star_gold['hex']))
+        brush.setStyle(Qt.SolidPattern)
+
+        return pen,brush
+
+    def swept_volume(self):
+        pen = QPen()
+        pen.setWidth(1)
+        pen.setColor(QColor(self.divider_color))
+
+        brush = QBrush()
+        brush.setColor(QColor(self.divider_color))
+        brush.setStyle(Qt.Dense6Pattern)
+
+        return pen,brush
+    
+    def free_space(self):
+        pen = QPen()
+        pen.setWidth(1)
+        pen.setColor(Qt.black)
+        pen.setStyle(Qt.DotLine)
+
+        brush = QBrush()
+        brush.setColor(Qt.white)
+        brush.setStyle(Qt.SolidPattern)
+
+        return pen,brush
+    
+    def text_color(self):
+        pen = QPen()
+        pen.setWidth(1)
+        pen.setColor(Qt.black)
+
+        brush = QBrush()
+        brush.setColor(Qt.black)
         brush.setStyle(Qt.SolidPattern)
 
         return pen,brush
