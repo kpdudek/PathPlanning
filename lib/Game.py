@@ -218,10 +218,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.update_canvas()
 
     def find_path(self):
-        if np.sum(self.roadmap.start_idx)<=0:
+        if np.sum(self.roadmap.start_idx)<0:
             log(f'Assign a start node!')
             return
-        if np.sum(self.roadmap.goal_idx)<=0:
+        if np.sum(self.roadmap.goal_idx)<0:
             log(f'Assign a goal node!')
             return
         
