@@ -1,9 +1,6 @@
 # PathPlanning
 Implementation and visualizaton of path planning algorithms on a 2D grid.
 
-### A*
-![A* Search](graphics/simple_astar.gif)
-
 ## Installation
 ### Windows 10
 Download python >3.7 from the Microsoft Store and then use pip3 to install PyQt5 and numpy from PowerShell. Install git as described [here](https://git-scm.com/download/win)
@@ -12,8 +9,10 @@ git clone https://github.com/kpdudek/PathPlanning.git
 pip3 install PyQt5 
 pip3 install numpy
 ```
-
 ## Usage
+### A*
+![A* Search](graphics/simple_astar.gif)
+
 Generate a graph by selecting the square dimension size, and then selecting Generate Graph. Random obstacles can be added by enabling Perlin noise.
 
 Select the painting type from Environment Config. Draw a start and goal node by clicking a tile in the canvas. Staged changes are shaded on the canvas.
