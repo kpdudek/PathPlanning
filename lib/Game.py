@@ -108,17 +108,9 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
     def toggle_perlin_options(self):
         log(f'Toggling perlin noise options: {self.perlin_noise_checkbox.isChecked()}')
         if self.perlin_noise_checkbox.isChecked():
-            state = True
-            self.passes_label.show()
-            self.cutoff_label.show()
-            self.passes_spinbox.show()
-            self.cutoff_spinbox.show()
+            self.perlin_options_frame.show()
         else:
-            state = False
-            self.passes_label.hide()
-            self.cutoff_label.hide()
-            self.passes_spinbox.hide()
-            self.cutoff_spinbox.hide()
+            self.perlin_options_frame.hide()
     
     def toggle_debug_mode(self):
         log(f'Toggling debug mode: {self.debug_mode_checkbox.isChecked()}')

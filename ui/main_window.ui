@@ -45,7 +45,7 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="4" column="0" colspan="2">
+          <item row="6" column="0" colspan="2">
            <widget class="QPushButton" name="generate_graph_button">
             <property name="font">
              <font>
@@ -57,42 +57,7 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QLabel" name="roadmap_status_label">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-              <italic>true</italic>
-             </font>
-            </property>
-            <property name="frameShape">
-             <enum>QFrame::Box</enum>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel" name="label_6">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Roadmap Status:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="9" column="0" colspan="2">
+          <item row="10" column="0" colspan="2">
            <widget class="QPushButton" name="generate_roadmap_button">
             <property name="font">
              <font>
@@ -104,7 +69,7 @@
             </property>
            </widget>
           </item>
-          <item row="11" column="0" colspan="2">
+          <item row="12" column="0" colspan="2">
            <widget class="QPushButton" name="find_path_button">
             <property name="font">
              <font>
@@ -116,14 +81,7 @@
             </property>
            </widget>
           </item>
-          <item row="10" column="0" colspan="2">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0" colspan="2">
+          <item row="9" column="0" colspan="2">
            <widget class="QCheckBox" name="allow_diagonals_checkbox">
             <property name="maximumSize">
              <size>
@@ -161,7 +119,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="label_4">
             <property name="maximumSize">
              <size>
@@ -182,7 +140,7 @@
             </property>
            </widget>
           </item>
-          <item row="12" column="0">
+          <item row="13" column="0">
            <widget class="QLabel" name="label_5">
             <property name="font">
              <font>
@@ -197,7 +155,7 @@
             </property>
            </widget>
           </item>
-          <item row="12" column="1">
+          <item row="13" column="1">
            <widget class="QDoubleSpinBox" name="playback_speed_spinbox">
             <property name="font">
              <font>
@@ -206,7 +164,7 @@
             </property>
            </widget>
           </item>
-          <item row="14" column="0" colspan="2">
+          <item row="15" column="0" colspan="2">
            <widget class="QPushButton" name="animate_button">
             <property name="font">
              <font>
@@ -218,8 +176,30 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QFrame" name="frame_6">
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QLabel" name="label_7">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Graph Options:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QFrame" name="perlin_options_frame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -305,7 +285,22 @@
             </layout>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="7" column="0" colspan="2">
+           <widget class="QLabel" name="label_8">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Roadmap Options:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
            <widget class="QSpinBox" name="grid_size_spinbox">
             <property name="font">
              <font>
@@ -323,7 +318,7 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="4" column="0">
            <widget class="QCheckBox" name="perlin_noise_checkbox">
             <property name="maximumSize">
              <size>
@@ -338,6 +333,21 @@
             </property>
             <property name="text">
              <string>Perlin Noise</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="0" colspan="2">
+           <widget class="QLabel" name="label_9">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Graph Search:</string>
             </property>
            </widget>
           </item>
@@ -359,42 +369,7 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="draw_checkbox">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Draw node type</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label_2">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Environment Config</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
+          <item row="4" column="0" colspan="2">
            <widget class="QFrame" name="paint_tool_frame">
             <property name="enabled">
              <bool>true</bool>
@@ -468,6 +443,48 @@
             </layout>
            </widget>
           </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="draw_checkbox">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+              <weight>50</weight>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Paint node type</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2">
+           <widget class="QLabel" name="label_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>14</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Environment Config</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -497,6 +514,13 @@
             </property>
             <property name="text">
              <string>Options</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
