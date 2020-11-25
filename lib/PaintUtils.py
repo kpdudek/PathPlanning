@@ -30,6 +30,7 @@ class ElementColors():
     divider_color = '#ff9955'
     background_color = '#353535'
     warning_text = '#FB0101'
+    explored = '#66ff33'
 
 class DarkColors(ElementColors):
     
@@ -153,7 +154,18 @@ class PaintBrushes():
 
         brush = QBrush()
         brush.setColor(QColor(self.divider_color))
-        brush.setStyle(Qt.Dense6Pattern)
+        brush.setStyle(Qt.Dense5Pattern)
+
+        return pen,brush
+    
+    def search_history(self):
+        pen = QPen()
+        pen.setWidth(2)
+        pen.setColor(QColor(self.explored))
+
+        brush = QBrush()
+        brush.setColor(QColor(self.explored))
+        brush.setStyle(Qt.Dense5Pattern)
 
         return pen,brush
     

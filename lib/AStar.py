@@ -33,9 +33,11 @@ class AStar(object):
 
         tic = time.time()
         iter_count = 0
+        history = []
         while not self.queue.is_empty():
             iter_count += 1
             idx_next,cost = self.queue.min_extract()
+            history.append(idx_next)
             idx_closed.append(idx_next)
 
             if idx_next == goal_idx:
@@ -53,7 +55,8 @@ class AStar(object):
                 log(f'\tNeighbors: {neighbors}')
         
         path = self.get_path(start_idx,goal_idx)
-        return path
+
+        return path, history
 
     def expand_list(self,idx_next,idx_closed):
         neighbors = []
