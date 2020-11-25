@@ -13,7 +13,7 @@ import copy
 import random
 # from numba import jit
 
-from Utils import *
+from lib.Utils import *
 try:
     from matplotlib import pyplot as plt
     from matplotlib import patches

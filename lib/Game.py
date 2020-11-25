@@ -23,30 +23,37 @@ class Canvas(QLabel):
         self.mouse_pose = None
         self.selected_item = None
         self.grid_size = grid_size
+        self.square_size = None
 
     def mousePressEvent(self,e):
         log(f'Canvas clicked: x:{e.x()} y:{e.y()}')
         log(f'\tGrid size: {self.grid_size}')
         self.mouse_pose = np.array([[e.x()],[e.y()]])
-        y_offset = (self.geometry().height()-self.geometry().width())/2
-        r = math.floor(e.x()/(self.geometry().width()/self.grid_size))
-        c = math.floor((e.y()-y_offset)/(self.geometry().width()/self.grid_size))
+        y_offset = (self.geometry().height()-self.square_size)/2.
+        r = int(e.x()/(self.square_size/self.grid_size))
+        c = int((e.y()-y_offset)/(self.square_size/self.grid_size))
+        if (r >= self.grid_size) or (c >= self.grid_size) or (r < 0) or (c < 0):
+            return
         log(f'\tTile clicked: {r} {c}')
         self.tile_click.emit(r,c)
 
     def mouseMoveEvent(self,e):
         self.mouse_pose = np.array([[e.x()],[e.y()]])
-        y_offset = (self.geometry().height()-self.geometry().width())/2
-        r = math.floor(e.x()/(self.geometry().width()/self.grid_size))
-        c = math.floor((e.y()-y_offset)/(self.geometry().width()/self.grid_size))
+        y_offset = (self.geometry().height()-self.square_size)/2.
+        r = int(e.x()/(self.square_size/self.grid_size))
+        c = int((e.y()-y_offset)/(self.square_size/self.grid_size))
+        if (r >= self.grid_size) or (c >= self.grid_size) or (r < 0) or (c < 0):
+            return
         self.tile_drag.emit(r,c)
 
     def mouseReleaseEvent(self,e):
         log(f'Canvas released: x:{e.x()} y:{e.y()}')
         self.mouse_pose = np.array([[e.x()],[e.y()]])
-        y_offset = (self.geometry().height()-self.geometry().width())/2
-        r = math.floor(e.x()/(self.geometry().width()/self.grid_size))
-        c = math.floor((e.y()-y_offset)/(self.geometry().width()/self.grid_size))
+        y_offset = (self.geometry().height()-self.square_size)/2.
+        r = int(e.x()/(self.square_size/self.grid_size))
+        c = int((e.y()-y_offset)/(self.square_size/self.grid_size))
+        if (r >= self.grid_size) or (c >= self.grid_size) or (r < 0) or (c < 0):
+            return
         log(f'\tTile Released: {r} {c}')
         self.tile_release.emit(r,c)
 
@@ -80,6 +87,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
         self.canvas_label = Canvas(self.grid_size)
         self.verticalLayout_6.addWidget(self.canvas_label)
+        # self.verticalLayout_6.setAlignment(Qt.AlignHCenter)
         self.canvas = QPixmap(self.width/2.,self.height)
         self.canvas_label.setPixmap(self.canvas)
         self.canvas_label.tile_click.connect(self.tile_click_action)
@@ -94,6 +102,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.show()
         self.update()
 
+        self.prev_tile = np.zeros([2,1])-1
         self.update_canvas()
 
     def toggle_perlin_options(self):
@@ -185,13 +194,29 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         except:
             pass
 
+        self.prev_tile = np.array([[r],[c]])
         self.canvas_label.update()
 
     def tile_drag_action(self,r,c):
+        tile = np.array([[r],[c]])
+        if np.all(self.prev_tile==tile):
+            self.prev_tile = tile
+            return
+        
+        log(f'Canvas dragged to tile: ({r},{c})')
         # If drawing is enabled
+        self.get_paint_type()
         if self.draw_checkbox.isChecked():
+            if self.draw_action == 'Obstacle':
+                self.roadmap.occupancy_graph[r,c] = 1
+                self.roadmap.graph[r,c].occupied = True
+            elif self.draw_action == 'Free':
+                self.roadmap.occupancy_graph[r,c] = 0
+                self.roadmap.graph[r,c].occupied = False
+            else:
+                self.prev_tile = tile
+                return
             self.painter = QtGui.QPainter(self.canvas_label.pixmap())
-            self.get_paint_type()
             pen,brush = self.transparent_poly(self.draw_color,2)
             self.painter.setPen(pen)
             self.painter.setBrush(brush)
@@ -199,14 +224,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
             rec = QRect(r*size,c*size,size,size)
             self.painter.drawRect(rec)
             log(f'\tDraw action: {self.draw_action}')
-            if self.draw_action == 'Obstacle':
-                self.roadmap.occupancy_graph[r,c] = 1
-                self.roadmap.graph[r,c].occupied = True
-            elif self.draw_action == 'Free':
-                self.roadmap.occupancy_graph[r,c] = 0
-                self.roadmap.graph[r,c].occupied = False
+
             self.painter.end()
 
+        self.prev_tile = tile
         self.canvas_label.update()
 
     def tile_release_action(self,r,c):
@@ -304,18 +325,27 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
     def draw_path(self):
         if len(self.path[0,:]) > 0:
-            path = self.path[:,1:]
+            path = self.path
             self.painter = QtGui.QPainter(self.canvas_label.pixmap())
-            pen,brush = self.swept_volume()
-            self.painter.setPen(pen)
-            self.painter.setBrush(brush)
             
             size = self.square_size/self.grid_size
             for col_idx in range(0,len(path[0,:])):
                 x,y = path[:,col_idx]
                 x = int(x); y = int(y)
                 rec = QRect(x*size,y*size,size,size)
+                pen,brush = self.swept_volume()
+                self.painter.setPen(pen)
+                self.painter.setBrush(brush)
                 self.painter.drawRect(rec)
+
+                if (col_idx < len(path[0,:])-1):
+                    x = x*size + (size/2.); y = y*size + (size/2.)
+                    x2,y2 = path[:,col_idx+1]
+                    x2 = int(x2)*size + (size/2); y2 = int(y2)*size + (size/2)
+                    pen,brush = self.path_line()
+                    self.painter.setPen(pen)
+                    self.painter.setBrush(brush)
+                    self.painter.drawLine(x,y,x2,y2)
             self.painter.end()
         self.update()
 
@@ -326,7 +356,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                 x,y = node.coord
                 tx = int(x)*size + size/3.
                 ty = int(y)*size + size/2.
-                x = int(x)*size + (size/2); y = int(y)*size + (size/2)
+                x = int(x)*size + (size/2.); y = int(y)*size + (size/2.)
                 if self.debug_mode:
                     pen,brush = self.text_color()
                     self.painter.setPen(pen)
@@ -342,6 +372,8 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
     def update_canvas(self):
         self.square_size = min([self.canvas_label.geometry().width(),self.canvas_label.geometry().height()])
+        self.canvas_label.square_size = self.square_size
+
         self.canvas = QPixmap(self.square_size,self.square_size)
         self.canvas_label.setPixmap(self.canvas)
         

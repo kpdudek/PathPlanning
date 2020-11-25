@@ -135,9 +135,20 @@ class PaintBrushes():
 
         return pen,brush
 
+    def path_line(self):
+        pen = QPen()
+        pen.setWidth(2)
+        pen.setColor(QColor(self.title_blue))
+
+        brush = QBrush()
+        brush.setColor(QColor(self.title_blue))
+        brush.setStyle(Qt.SolidPattern)
+
+        return pen,brush
+
     def swept_volume(self):
         pen = QPen()
-        pen.setWidth(1)
+        pen.setWidth(2)
         pen.setColor(QColor(self.divider_color))
 
         brush = QBrush()

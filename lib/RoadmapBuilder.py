@@ -2,11 +2,12 @@
 """ Library for creating 2D graphs, and then determining free space and connections to generate a roadmap """
 
 import numpy as np
-import math
-import sys
+import math, sys
+import ctypes
 
 from lib.PerlinNoise import *
 from lib.Utils import *
+from lib.Geometry import *
 
 # Class that constructs an empty node in a graph
 class Node(object):
@@ -33,8 +34,9 @@ class Node(object):
         return node_type
 
 # Class that builds a 2D roadmap
-class RoadmapBuilder(object):
+class RoadmapBuilder(FilePaths):
     def __init__(self):
+        super().__init__()
         self.roadmap = []
         self.obstacles = []
 
@@ -44,6 +46,11 @@ class RoadmapBuilder(object):
 
         self.start_idx = np.zeros([2,1]) - 1
         self.goal_idx = np.zeros([2,1]) - 1
+
+        # C library for collision checking
+        self.c_float_p = ctypes.POINTER(ctypes.c_double)
+        self.fun = ctypes.CDLL(f'{self.user_path}lib/{self.cc_lib_path}') # Or full path to file
+        self.fun.polygon_is_collision.argtypes = [self.c_float_p,ctypes.c_int,ctypes.c_int,self.c_float_p,ctypes.c_int,ctypes.c_int] 
     
     def construct_square(self,num):
         self.grid_size = num
@@ -166,3 +173,30 @@ class RoadmapBuilder(object):
         end = self.roadmap[idx_end].coord
         return math.pow((math.pow(start[0]-end[0],2) + math.pow(start[1]-end[1],2)),.5)
 
+    def collision_check(self,n1,n2):
+        '''
+        This function is passed two node indexes in the roadmap, and returns if the edge connecting them is collision free.
+        The edge connecting them is assumed to be bi-directional.
+        The roadmap builder's collision geometry is checked against the environment's collision geometry.
+        Arguments:
+            n1 [int]: index of node 1
+            n2 [int]: index of node 2
+        Returns:
+            res [bool]: if the edge is collision free
+        '''
+        data = copy.deepcopy(self.sprite.polys[self.sprite.idx].vertices)
+        data = data.astype(np.double)
+        data_p = data.ctypes.data_as(self.c_float_p)
+
+        data2 = copy.deepcopy(obs_check.vertices)
+        data2 = data2.astype(np.double)
+        data_p2 = data2.ctypes.data_as(self.c_float_p)
+
+        # get two polygons
+        # collision check
+        # if not in collision, translate the agent
+        # collision check
+        # repeat
+
+        # C Function call in python
+        res = self.fun.polygon_is_collision(data_p,2,len(self.sprite.polys[self.sprite.idx].vertices[0,:]),data_p2,2,len(obs_check.vertices[0,:]))

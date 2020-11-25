@@ -14,7 +14,7 @@ import pathlib
 class Error(Exception):
     pass
 
-class FilePaths(object):
+class FilePaths():
     if sys.platform == 'win32':
         user_path = str(pathlib.Path().absolute()) + '\\'
         lib_path = user_path + 'lib\\'
