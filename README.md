@@ -1,5 +1,8 @@
 # PathPlanning
-Implementation and visualizaton of the A* path planning algorithm on a 2D grid.
+Implementation and visualizaton of path planning algorithms on a 2D grid.
+
+### A*
+![A* Search](graphics/simple_astar.gif)
 
 ## Installation
 ### Windows 10
