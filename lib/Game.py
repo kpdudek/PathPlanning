@@ -148,7 +148,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         if self.draw_checkbox.isChecked():
             self.painter = QtGui.QPainter(self.canvas_label.pixmap())
             self.get_paint_type()
-            pen,brush = self.transparent_poly(self.draw_color,2)
+            if self.draw_action == 'Free':
+                pen,brush = self.free_space()
+            else:
+                pen,brush = self.transparent_poly(self.draw_color,2)
             self.painter.setPen(pen)
             self.painter.setBrush(brush)
             size = self.square_size/self.grid_size
@@ -211,7 +214,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                 self.prev_tile = tile
                 return
             self.painter = QtGui.QPainter(self.canvas_label.pixmap())
-            pen,brush = self.transparent_poly(self.draw_color,2)
+            if self.draw_action == 'Free':
+                pen,brush = self.free_space()
+            else:
+                pen,brush = self.transparent_poly(self.draw_color,2)
             self.painter.setPen(pen)
             self.painter.setBrush(brush)
             size = self.square_size/self.grid_size
