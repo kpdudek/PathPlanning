@@ -71,7 +71,7 @@ def Perlin2D(x, y, P):
 
     return Lerp(u,Lerp(v, dotBottomLeft, dotTopLeft),Lerp(v, dotBottomRight, dotTopRight))
 
-def generate_graph(size,passes=2,cutoff=1.1):
+def perlin_noise(size,passes=2,cutoff=1.1):
     grid = np.ones([size,size])
     r,c = grid.shape
 
@@ -95,5 +95,18 @@ def generate_graph(size,passes=2,cutoff=1.1):
                 grid[x][y] = 1
             else:
                 grid[x][y] = 0
+
+    return grid
+
+
+def random_noise(size,cutoff=0.5):
+    grid = np.zeros([size,size])
+    r,c = grid.shape
+
+    for i in range(0,r):
+        for j in range(0,c):
+            val = random.random()
+            if val >= cutoff:
+                grid[i,j] = 1
 
     return grid

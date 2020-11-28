@@ -5,7 +5,7 @@ import numpy as np
 import math, sys
 import ctypes
 
-from lib.PerlinNoise import *
+from lib.Noise import *
 from lib.Utils import *
 from lib.Geometry import *
 
@@ -36,7 +36,7 @@ class Node(object):
 # Class that builds a 2D roadmap
 class RoadmapBuilder(FilePaths):
     def __init__(self):
-        super().__init__()
+        super().__init__()        
         self.roadmap = []
         self.obstacles = []
 
@@ -61,9 +61,16 @@ class RoadmapBuilder(FilePaths):
                 insert_node.coord = np.array([[x],[y]])
                 self.graph[x][y] = insert_node
     
-    def set_obstacles(self,size,passes=2,cutoff=1.1):
-        self.occupancy_graph = None
-        self.occupancy_graph = generate_graph(size,passes=passes,cutoff=cutoff)
+    def set_obstacles(self,size,noise_type=None,passes=2,cutoff=1.1):
+        if noise_type == 'perlin':
+            log(f'Generating perlin noise.')
+            tmp = perlin_noise(size,passes=passes,cutoff=cutoff)
+            
+        elif noise_type == 'random':
+            log(f'Generating random noise.')
+            tmp = random_noise(size,cutoff=cutoff)
+        
+        self.occupancy_graph = np.logical_or(self.occupancy_graph,tmp) 
 
     def clear_obstacles(self):
         self.occupancy_graph = None

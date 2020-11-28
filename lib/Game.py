@@ -24,14 +24,20 @@ class Canvas(QLabel):
         self.selected_item = None
         self.grid_size = grid_size
         self.square_size = None
+        # self.calculate_offsets()
+
+    def calculate_offsets(self):
+        self.y_offset = int((self.geometry().height()-self.square_size)/2.)
+        self.x_offset = int((self.geometry().width()-self.square_size)/2.)
+        log(f'\tOffsets: {self.x_offset} {self.y_offset}')
 
     def mousePressEvent(self,e):
         log(f'Canvas clicked: x:{e.x()} y:{e.y()}')
         log(f'\tGrid size: {self.grid_size}')
+        self.calculate_offsets()
         self.mouse_pose = np.array([[e.x()],[e.y()]])
-        y_offset = (self.geometry().height()-self.square_size)/2.
         r = int(e.x()/(self.square_size/self.grid_size))
-        c = int((e.y()-y_offset)/(self.square_size/self.grid_size))
+        c = int((e.y()-self.y_offset)/(self.square_size/self.grid_size))
         if (r >= self.grid_size) or (c >= self.grid_size) or (r < 0) or (c < 0):
             return
         log(f'\tTile clicked: {r} {c}')
@@ -39,9 +45,8 @@ class Canvas(QLabel):
 
     def mouseMoveEvent(self,e):
         self.mouse_pose = np.array([[e.x()],[e.y()]])
-        y_offset = (self.geometry().height()-self.square_size)/2.
         r = int(e.x()/(self.square_size/self.grid_size))
-        c = int((e.y()-y_offset)/(self.square_size/self.grid_size))
+        c = int((e.y()-self.y_offset)/(self.square_size/self.grid_size))
         if (r >= self.grid_size) or (c >= self.grid_size) or (r < 0) or (c < 0):
             return
         self.tile_drag.emit(r,c)
@@ -49,9 +54,8 @@ class Canvas(QLabel):
     def mouseReleaseEvent(self,e):
         log(f'Canvas released: x:{e.x()} y:{e.y()}')
         self.mouse_pose = np.array([[e.x()],[e.y()]])
-        y_offset = (self.geometry().height()-self.square_size)/2.
         r = int(e.x()/(self.square_size/self.grid_size))
-        c = int((e.y()-y_offset)/(self.square_size/self.grid_size))
+        c = int((e.y()-self.y_offset)/(self.square_size/self.grid_size))
         if (r >= self.grid_size) or (c >= self.grid_size) or (r < 0) or (c < 0):
             return
         log(f'\tTile Released: {r} {c}')
@@ -60,8 +64,7 @@ class Canvas(QLabel):
 class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
     def __init__(self,screen,fps=60.0):
-        super().__init__()
-        
+        super().__init__()        
         uic.loadUi(f'{self.user_path}ui/main_window.ui',self)
         self.setFocusPolicy(Qt.StrongFocus)
         
@@ -79,6 +82,8 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.find_path_button.clicked.connect(self.find_path)
         self.perlin_noise_checkbox.stateChanged.connect(self.toggle_perlin_options)
         self.toggle_perlin_options()
+        self.random_noise_checkbox.stateChanged.connect(self.toggle_random_options)
+        self.toggle_random_options()
         self.draw_checkbox.stateChanged.connect(self.toggle_paint_tool_frame)
         self.toggle_paint_tool_frame()
         self.animate_button.clicked.connect(self.animate_history)
@@ -88,23 +93,22 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
         self.canvas_label = Canvas(self.grid_size)
         self.verticalLayout_6.addWidget(self.canvas_label)
-        # self.verticalLayout_6.setAlignment(Qt.AlignHCenter)
         self.canvas = QPixmap(self.width/2.,self.height)
         self.canvas_label.setPixmap(self.canvas)
         self.canvas_label.tile_click.connect(self.tile_click_action)
         self.canvas_label.tile_drag.connect(self.tile_drag_action)
         self.canvas_label.tile_release.connect(self.tile_release_action)
 
-        self.redraw_graph()
-        self.path = None
+        self.path = np.zeros([2,1])-1
         self.history = None
+        self.redraw_graph()
         self.astar = AStar(self.roadmap,self.debug_mode)
+        self.prev_tile = np.zeros([2,1])-1
 
         # Show main window
         self.show()
         self.update()
 
-        self.prev_tile = np.zeros([2,1])-1
         self.update_canvas()
 
     def toggle_perlin_options(self):
@@ -113,6 +117,13 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
             self.perlin_options_frame.show()
         else:
             self.perlin_options_frame.hide()
+
+    def toggle_random_options(self):
+        log(f'Toggling random noise options: {self.random_noise_checkbox.isChecked()}')
+        if self.random_noise_checkbox.isChecked():
+            self.random_options_frame.show()
+        else:
+            self.random_options_frame.hide()
     
     def toggle_debug_mode(self):
         log(f'Toggling debug mode: {self.debug_mode_checkbox.isChecked()}')
@@ -234,9 +245,12 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         pass
 
     def resizeEvent(self, event):
-        self.height = float(event.size().height())
-        self.width = float(event.size().width())
-        self.update_canvas()
+        try:
+            self.height = float(event.size().height())
+            self.width = float(event.size().width())
+            self.update_canvas()
+        except:
+            pass
 
     def find_path(self):
         if np.sum(self.roadmap.start_idx)<0:
@@ -293,6 +307,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
     def generate_roadmap(self):
         self.diag_val = self.allow_diagonals_checkbox.isChecked()
+        self.path = np.zeros([2,1])-1
         log(f'Finding neighbors...')
         self.roadmap.init_roadmap()
         self.roadmap.set_neighbors(diagonals=self.diag_val)
@@ -303,15 +318,20 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.grid_size = self.grid_size_spinbox.value()
         self.canvas_label.grid_size = self.grid_size
 
+        self.path = np.zeros([2,1])-1
         self.roadmap = rb.RoadmapBuilder()
         self.roadmap.construct_square(self.grid_size)
+        
+        self.roadmap.clear_obstacles()
 
         if self.perlin_noise_checkbox.isChecked():
             self.passes = self.passes_spinbox.value()
             self.cutoff = self.cutoff_spinbox.value()
-            self.roadmap.set_obstacles(self.grid_size,passes=self.passes,cutoff=self.cutoff)
-        else:
-            self.roadmap.clear_obstacles()
+            self.roadmap.set_obstacles(self.grid_size,noise_type='perlin',passes=self.passes,cutoff=self.cutoff)
+        
+        if self.random_noise_checkbox.isChecked():
+            cutoff = self.random_cutoff_spinbox.value()
+            self.roadmap.set_obstacles(self.grid_size,noise_type='random',cutoff=cutoff)
 
         self.roadmap.init_roadmap()
         self.update_canvas()
@@ -352,7 +372,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                     rec = QRect(i*size,j*size,size,size)
                     self.painter.drawRect(rec)
 
-        log(f"Roadmap length: {len(self.roadmap.roadmap)}")
+        # log(f"Roadmap length: {len(self.roadmap.roadmap)}")
 
     def draw_path(self):
         if len(self.path[0,:]) > 0:
@@ -402,8 +422,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                     self.painter.drawLine(x,y,x2,y2)
 
     def update_canvas(self):
+        self.background_size = np.array([[self.canvas_label.geometry().width()],[self.canvas_label.geometry().height()]])
         self.square_size = min([self.canvas_label.geometry().width(),self.canvas_label.geometry().height()])
         self.canvas_label.square_size = self.square_size
+        self.canvas_label.calculate_offsets()
 
         self.canvas = QPixmap(self.square_size,self.square_size)
         self.canvas_label.setPixmap(self.canvas)
@@ -418,8 +440,8 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
         self.draw_grid()
         self.draw_connections()
+        self.draw_path()
 
         self.painter.end()
-            
-    def game_loop(self):
-        curr_time = time.time()
+
+
