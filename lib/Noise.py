@@ -72,7 +72,7 @@ def Perlin2D(x, y, P):
     return Lerp(u,Lerp(v, dotBottomLeft, dotTopLeft),Lerp(v, dotBottomRight, dotTopRight))
 
 def perlin_noise(size,passes=2,cutoff=1.1):
-    grid = np.ones([size,size])
+    grid = np.zeros([size,size])
     r,c = grid.shape
 
     for i in range(0,passes):

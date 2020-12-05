@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1121</width>
-    <height>861</height>
+    <height>891</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -44,7 +44,17 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
          <layout class="QGridLayout" name="gridLayout_5">
+          <item row="2" column="0" colspan="2">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
           <item row="8" column="0" colspan="2">
            <widget class="QPushButton" name="generate_graph_button">
             <property name="font">
@@ -52,35 +62,11 @@
               <pointsize>10</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Generate the 2D graph and display it in the canvas.</string>
+            </property>
             <property name="text">
              <string>Generate Graph</string>
-            </property>
-           </widget>
-          </item>
-          <item row="12" column="0" colspan="2">
-           <widget class="QPushButton" name="generate_roadmap_button">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Generate Roadmap</string>
-            </property>
-           </widget>
-          </item>
-          <item row="15" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Playback Speed:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -97,6 +83,9 @@
               <pointsize>10</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>The number of tiles used for rows and columns of the square graph.</string>
+            </property>
             <property name="text">
              <string>Grid Size: </string>
             </property>
@@ -105,88 +94,11 @@
             </property>
            </widget>
           </item>
-          <item row="11" column="0" colspan="2">
-           <widget class="QCheckBox" name="allow_diagonals_checkbox">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Allow Diagonals</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>14</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Path Planner</string>
-            </property>
-           </widget>
-          </item>
-          <item row="14" column="0" colspan="2">
-           <widget class="QPushButton" name="find_path_button">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Find Path</string>
-            </property>
-           </widget>
-          </item>
-          <item row="15" column="1">
-           <widget class="QDoubleSpinBox" name="playback_speed_spinbox">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="singleStep">
-             <double>0.020000000000000</double>
-            </property>
-            <property name="value">
-             <double>0.050000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="17" column="0" colspan="2">
-           <widget class="QPushButton" name="animate_button">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Animate</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
+          <item row="1" column="0" colspan="2">
            <widget class="QLabel" name="label_7">
             <property name="font">
              <font>
-              <pointsize>10</pointsize>
+              <pointsize>12</pointsize>
               <weight>75</weight>
               <italic>true</italic>
               <bold>true</bold>
@@ -197,10 +109,24 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="Line" name="line_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="grid_size_spinbox">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>The number of tiles used for rows and columns of the 2D square graph.</string>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>128</number>
+            </property>
+            <property name="value">
+             <number>15</number>
             </property>
            </widget>
           </item>
@@ -217,57 +143,75 @@
               <pointsize>10</pointsize>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Add obstacles based on perlin noise during graph generation.</string>
+            </property>
             <property name="text">
              <string>Perlin Noise</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
-           <widget class="QSpinBox" name="grid_size_spinbox">
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="random_noise_checkbox">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="minimum">
-             <number>2</number>
+            <property name="toolTip">
+             <string>Add uniformly distributed obstacles during graph generation.</string>
             </property>
-            <property name="maximum">
-             <number>128</number>
-            </property>
-            <property name="value">
-             <number>10</number>
+            <property name="text">
+             <string>Random Noise</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0" colspan="2">
-           <widget class="QLabel" name="label_8">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-              <weight>75</weight>
-              <italic>true</italic>
-              <bold>true</bold>
-             </font>
+          <item row="5" column="0" colspan="2">
+           <widget class="QFrame" name="random_options_frame">
+            <property name="frameShape">
+             <enum>QFrame::StyledPanel</enum>
             </property>
-            <property name="text">
-             <string>Roadmap Options:</string>
+            <property name="frameShadow">
+             <enum>QFrame::Raised</enum>
             </property>
-           </widget>
-          </item>
-          <item row="13" column="0" colspan="2">
-           <widget class="QLabel" name="label_9">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-              <weight>75</weight>
-              <italic>true</italic>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Graph Search:</string>
-            </property>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_6">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Cutoff:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QDoubleSpinBox" name="random_cutoff_spinbox">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+               <property name="toolTip">
+                <string>Percent chance of a tile being an obstacle.</string>
+               </property>
+               <property name="maximum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.050000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.700000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
           <item row="7" column="0" colspan="2">
@@ -310,6 +254,12 @@
                  <pointsize>10</pointsize>
                 </font>
                </property>
+               <property name="toolTip">
+                <string>Number of times noise is added to the graph.</string>
+               </property>
+               <property name="maximum">
+                <number>10</number>
+               </property>
                <property name="value">
                 <number>2</number>
                </property>
@@ -346,65 +296,17 @@
                  <pointsize>10</pointsize>
                 </font>
                </property>
-               <property name="singleStep">
-                <double>0.050000000000000</double>
+               <property name="toolTip">
+                <string>Density of obstacles on a 0 to 1 scale where: 0 -&gt; all obstacles and 1 -&gt; no obstacles.</string>
                </property>
-               <property name="value">
-                <double>1.100000000000000</double>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="random_noise_checkbox">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Random Noise</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QFrame" name="random_options_frame">
-            <property name="frameShape">
-             <enum>QFrame::StyledPanel</enum>
-            </property>
-            <property name="frameShadow">
-             <enum>QFrame::Raised</enum>
-            </property>
-            <layout class="QGridLayout" name="gridLayout_6">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_6">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Cutoff:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QDoubleSpinBox" name="random_cutoff_spinbox">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                </font>
+               <property name="maximum">
+                <double>1.000000000000000</double>
                </property>
                <property name="singleStep">
                 <double>0.050000000000000</double>
                </property>
                <property name="value">
-                <double>0.700000000000000</double>
+                <double>0.550000000000000</double>
                </property>
               </widget>
              </item>
@@ -449,6 +351,9 @@
                  <weight>50</weight>
                  <bold>false</bold>
                 </font>
+               </property>
+               <property name="toolTip">
+                <string/>
                </property>
                <property name="text">
                 <string>Start</string>
@@ -512,6 +417,9 @@
               <bold>false</bold>
              </font>
             </property>
+            <property name="toolTip">
+             <string>Change the tile type when clicking and dragging. Clicking a tile will print its information regardless.</string>
+            </property>
             <property name="text">
              <string>Paint node type</string>
             </property>
@@ -530,11 +438,12 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>14</pointsize>
+              <pointsize>12</pointsize>
+              <italic>true</italic>
              </font>
             </property>
             <property name="text">
-             <string>Environment Config</string>
+             <string>Environment Config:</string>
             </property>
            </widget>
           </item>
@@ -542,6 +451,179 @@
            <widget class="Line" name="line_4">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame_6">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_8">
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="allow_diagonals_checkbox">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>When determining neighbors of a tile diagonal tiles will be included.</string>
+            </property>
+            <property name="text">
+             <string>Allow Diagonals</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_8">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Roadmap Options:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QPushButton" name="generate_roadmap_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Generate the roadmap and repaint the canvas with connection lines and tile colors.</string>
+            </property>
+            <property name="text">
+             <string>Generate Roadmap</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="frame">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="playback_speed_spinbox">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>The refresh rate when displaying explored tiles.</string>
+            </property>
+            <property name="singleStep">
+             <double>0.020000000000000</double>
+            </property>
+            <property name="value">
+             <double>0.050000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Playback Speed:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QPushButton" name="find_path_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Find a path between the start and goal tile if one exists.</string>
+            </property>
+            <property name="text">
+             <string>Find Path</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2">
+           <widget class="QLabel" name="label_9">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Graph Search:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QPushButton" name="animate_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Animate the search process by displaying the planners steps visually on the canvas.</string>
+            </property>
+            <property name="text">
+             <string>Animate</string>
             </property>
            </widget>
           </item>
@@ -556,6 +638,9 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item alignment="Qt::AlignTop">
            <widget class="QLabel" name="label_3">
@@ -567,13 +652,14 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>14</pointsize>
+              <pointsize>12</pointsize>
               <weight>75</weight>
+              <italic>true</italic>
               <bold>true</bold>
              </font>
             </property>
             <property name="text">
-             <string>Options</string>
+             <string>Options:</string>
             </property>
            </widget>
           </item>
@@ -590,6 +676,9 @@
              <font>
               <pointsize>10</pointsize>
              </font>
+            </property>
+            <property name="toolTip">
+             <string>Print all loop variables of the planner, draw roadmap index values on the canvas, ...</string>
             </property>
             <property name="text">
              <string>Debug mode</string>
@@ -665,6 +754,26 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>grid_size_spinbox</tabstop>
+  <tabstop>random_noise_checkbox</tabstop>
+  <tabstop>random_cutoff_spinbox</tabstop>
+  <tabstop>perlin_noise_checkbox</tabstop>
+  <tabstop>passes_spinbox</tabstop>
+  <tabstop>cutoff_spinbox</tabstop>
+  <tabstop>generate_graph_button</tabstop>
+  <tabstop>draw_checkbox</tabstop>
+  <tabstop>radioButton</tabstop>
+  <tabstop>radioButton_2</tabstop>
+  <tabstop>radioButton_4</tabstop>
+  <tabstop>radioButton_3</tabstop>
+  <tabstop>allow_diagonals_checkbox</tabstop>
+  <tabstop>generate_roadmap_button</tabstop>
+  <tabstop>find_path_button</tabstop>
+  <tabstop>playback_speed_spinbox</tabstop>
+  <tabstop>animate_button</tabstop>
+  <tabstop>debug_mode_checkbox</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
