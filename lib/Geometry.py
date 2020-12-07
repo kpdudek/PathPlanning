@@ -203,8 +203,7 @@ def polygon_is_visible(vertices,indexVertex,points):
 
 def point_is_collision(poly1,point):
     '''
-    For a given pair of polygon objects, check if the bounding spheres
-    are in collision
+    For a given polygon and point, check if the point lies inside the polygon.
     '''
     result = True
     for idx in range(0,len(poly1[0,:])):
@@ -238,7 +237,7 @@ def sphere_is_collision(poly1,poly2):
 def polygon_is_collision(poly1,poly2,*argv):
     '''
     Assume two sets of vertices are passed representing two polygons
-    # Two instances of the Polygon class are passed to it 
+    Two instances of the Polygon class are passed to it 
     '''
     results = np.zeros(1,dtype=bool)
 
@@ -403,16 +402,9 @@ class Sphere(object):
         self.radius = r
 
 class Polygon(object):
-    def __init__(self,*argv,poly_type=None):
+    def __init__(self):
         self.vertices = None
         self.sphere = None
-
-        if poly_type == 'rect':
-            assert(len(argv)==2)
-            self.rectangle(argv[0],argv[1])
-        elif poly_type == 'peak':
-            assert(len(argv)==3)
-            self.peak(argv[0],argv[1],argv[2])
 
     def unit_circle(self,num,rad):
         self.vertices = np.zeros(num*2).reshape(2,num)

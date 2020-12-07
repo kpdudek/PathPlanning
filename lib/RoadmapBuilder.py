@@ -38,22 +38,31 @@ class RoadmapBuilder(FilePaths):
     def __init__(self):
         super().__init__()        
         self.roadmap = []
-        self.obstacles = []
+        self.geom = None
 
         self.grid_size = None
+        self.tile_size = None
         self.graph = None
         self.occupancy_graph = None
 
         self.start_idx = np.zeros([2,1]) - 1
         self.goal_idx = np.zeros([2,1]) - 1
 
+        self.epsilon = 5
+        self.collision_calls = 0
+
         # C library for collision checking
         self.c_float_p = ctypes.POINTER(ctypes.c_double)
         self.fun = ctypes.CDLL(f'{self.user_path}lib/{self.cc_lib_path}') # Or full path to file
         self.fun.polygon_is_collision.argtypes = [self.c_float_p,ctypes.c_int,ctypes.c_int,self.c_float_p,ctypes.c_int,ctypes.c_int] 
     
-    def construct_square(self,num):
+    def set_geometry(self):
+        self.geom = Polygon()
+        self.geom.unit_circle(4,10)
+
+    def construct_square(self,num,size):
         self.grid_size = num
+        self.tile_size = size
         self.graph = np.empty([num, num],dtype=Node)
         for x in range(0,num):
             for y in range(0,num):
@@ -92,88 +101,49 @@ class RoadmapBuilder(FilePaths):
                     self.graph[i][j].occupied = True
     
     def set_neighbors(self,diagonals=True):
+        self.collision_calls = 0
+
         r,c = self.graph.shape
         log(f'Generating neighbors for graph with shape: {r} {c}')
         for i in range(0,r):
             for j in range(0,c):
+                # reset all node elements except for its graph coordinate
                 self.graph[i,j].neighbors = []
                 self.graph[i,j].neighbors_cost = []
                 self.graph[i,j].backpointer = None
                 self.graph[i,j].backpointer_cost = None
 
-                if not self.graph[i,j].occupied:
-                    idx = self.graph[i,j].idx
-                    # immediate neighbors
-                    if (i+1 < r):
-                        if not self.graph[i+1,j].occupied:
-                            neighbor_idx = self.graph[i+1,j].idx
-                            self.roadmap[idx].neighbors.append(neighbor_idx)
-                            self.roadmap[idx].neighbors_cost.append(1.)
-                    if (j+1 < c):
-                        if not self.graph[i,j+1].occupied:
-                            neighbor_idx = self.graph[i,j+1].idx
-                            self.roadmap[idx].neighbors.append(neighbor_idx)
-                            self.roadmap[idx].neighbors_cost.append(1.)
-                    if (i-1 >= 0):
-                        if not self.graph[i-1,j].occupied:
-                            neighbor_idx = self.graph[i-1,j].idx
-                            self.roadmap[idx].neighbors.append(neighbor_idx)
-                            self.roadmap[idx].neighbors_cost.append(1.)
-                    if (j-1 >= 0):
-                        if not self.graph[i,j-1].occupied:
-                            neighbor_idx = self.graph[i,j-1].idx
-                            self.roadmap[idx].neighbors.append(neighbor_idx)
-                            self.roadmap[idx].neighbors_cost.append(1.)
-                    # diagonals
-                    if diagonals:
-                        if (i+1 < r) and (j+1 < c):
-                            if not self.graph[i+1,j+1].occupied:
-                                neighbor_idx = self.graph[i+1,j+1].idx
-                                self.roadmap[idx].neighbors.append(neighbor_idx)
-                                self.roadmap[idx].neighbors_cost.append(1.414)
-                        if (i-1 >= 0) and (j+1 < c):
-                            if not self.graph[i-1,j+1].occupied:
-                                neighbor_idx = self.graph[i-1,j+1].idx
-                                self.roadmap[idx].neighbors.append(neighbor_idx)
-                                self.roadmap[idx].neighbors_cost.append(1.414)
-                        if (i-1 >= 0) and (j-1 >= 0):
-                            if not self.graph[i-1,j-1].occupied:
-                                neighbor_idx = self.graph[i-1,j-1].idx
-                                self.roadmap[idx].neighbors.append(neighbor_idx)
-                                self.roadmap[idx].neighbors_cost.append(1.414)
-                        if (i+1 < r) and (j-1 >= 0):
-                            if not self.graph[i+1,j-1].occupied:
-                                neighbor_idx = self.graph[i+1,j-1].idx
-                                self.roadmap[idx].neighbors.append(neighbor_idx)
-                                self.roadmap[idx].neighbors_cost.append(1.414)
-
-    def find_nearest_neighbors(self,node_idx,num_neighbors):
-        nearest_idx = []
-        nearest_dist = []
-        nearest_neighbors = []
-        costs = []
-
-        for idx in range(0,len(self.roadmap)):
-            dist = self.euclidian_distance(node_idx,idx)
-            nearest_idx.append(idx)
-            nearest_dist.append(dist)
-
-        self_idx = nearest_idx.index(node_idx)
-        nearest_dist.pop(self_idx)
-        nearest_idx.pop(self_idx)
-
-        for num in range(0,num_neighbors):
-            idx = nearest_dist.index(min(nearest_dist))
-            
-            neighbor = nearest_idx[idx]
-            cost = nearest_dist[idx]
-            nearest_neighbors.append(neighbor)
-            costs.append(cost)
-            
-            nearest_dist.pop(idx)
-            nearest_idx.pop(idx)
+                # Generate a list of lists where each sub list is the vector from the current node to its
+                # prospective neighbor
+                # TODO: assign random neighbors that are not immediate
+                neighbor_list = []
+                for k in range(-1,2):
+                    for n in range(-1,2):
+                        if (k == 0) and (n == 0):
+                            pass
+                        elif (k != 0) and (n != 0) and (not diagonals):
+                            pass
+                        else:
+                            neighbor_list.append([k,n])
+                
+                # For every neighbor vector, check if it is a valid neighbor meaning:\
+                #   - it is not occupied
+                #   - it is a tile in the 2D graph
+                #   - the path from start to the neighbor is collision free
+                for neighbor in neighbor_list:
+                    if not self.graph[i,j].occupied:
+                        idx = self.graph[i,j].idx
+                        # immediate neighbors
+                        if (i+neighbor[0] < r) and (i+neighbor[0] >= 0) and (j+neighbor[1] < c) and (j+neighbor[1] >= 0):
+                            if not self.graph[i+neighbor[0],j+neighbor[1]].occupied:
+                                neighbor_idx = self.graph[i+neighbor[0],j+neighbor[1]].idx
+                                if not self.collision_check(idx,neighbor_idx):
+                                    self.roadmap[idx].neighbors.append(neighbor_idx)
+                                    dist = self.euclidian_distance(idx,neighbor_idx)
+                                    self.roadmap[idx].neighbors_cost.append(dist)
         
-        return nearest_neighbors,costs
+        log(f'Collision check calls made: {self.collision_calls}')
+        log(f'Epsilon value for edge discretization: {self.epsilon}')
 
     def euclidian_distance(self,idx_start,idx_end):
         start = self.roadmap[idx_start].coord
@@ -191,19 +161,39 @@ class RoadmapBuilder(FilePaths):
         Returns:
             res [bool]: if the edge is collision free
         '''
-        data = copy.deepcopy(self.sprite.polys[self.sprite.idx].vertices)
-        data = data.astype(np.double)
-        data_p = data.ctypes.data_as(self.c_float_p)
+        start_coord = self.roadmap[n1].coord
+        end_coord = self.roadmap[n2].coord
 
-        data2 = copy.deepcopy(obs_check.vertices)
-        data2 = data2.astype(np.double)
-        data_p2 = data2.ctypes.data_as(self.c_float_p)
+        x_interp = np.linspace(start_coord[0],end_coord[0],num=self.epsilon).reshape(1,self.epsilon)
+        y_interp = np.linspace(start_coord[1],end_coord[1],num=self.epsilon).reshape(1,self.epsilon)
+        interp = np.vstack((x_interp,y_interp))
+        # print(interp)
+        interp = np.hstack((start_coord,interp))
+        interp = np.hstack((interp,end_coord))
 
-        # get two polygons
-        # collision check
-        # if not in collision, translate the agent
-        # collision check
-        # repeat
+        # print(interp)
+        r,c = self.graph.shape
+        for step_idx in range(0,self.epsilon+2):
+            for i in range(0,r):
+                for j in range(0,c):
+                    if self.graph[i,j].occupied:
+                        coord = self.graph[i,j].coord
+                        
+                        # data = copy.deepcopy()
+                        # data = data.astype(np.double)
+                        # data_p = data.ctypes.data_as(self.c_float_p)
 
-        # C Function call in python
-        res = self.fun.polygon_is_collision(data_p,2,len(self.sprite.polys[self.sprite.idx].vertices[0,:]),data_p2,2,len(obs_check.vertices[0,:]))
+                        # data2 = copy.deepcopy()
+                        # data2 = data2.astype(np.double)
+                        # data_p2 = data2.ctypes.data_as(self.c_float_p)
+
+                        # # get two polygons
+                        # # collision check
+                        # # if not in collision, translate the agent
+                        # # collision check
+                        # # repeat
+
+                        # # C Function call in python
+                        # res = self.fun.polygon_is_collision(data_p,2,len(self.sprite.polys[self.sprite.idx].vertices[0,:]),data_p2,2,len(obs_check.vertices[0,:]))
+                    self.collision_calls += 1
+        return False

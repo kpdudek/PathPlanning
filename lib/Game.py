@@ -29,7 +29,7 @@ class Canvas(QLabel):
     def calculate_offsets(self):
         self.y_offset = int((self.geometry().height()-self.square_size)/2.)
         self.x_offset = int((self.geometry().width()-self.square_size)/2.)
-        log(f'\tOffsets: {self.x_offset} {self.y_offset}')
+        log(f'Expected canvas transform: {self.x_offset} {self.y_offset}')
 
     def mousePressEvent(self,e):
         log(f'Canvas clicked: x:{e.x()} y:{e.y()}')
@@ -78,6 +78,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.grid_size = self.grid_size_spinbox.value()
 
         self.generate_graph_button.clicked.connect(self.redraw_graph)
+        self.grid_size_spinbox.valueChanged.connect(self.redraw_graph)
         self.generate_roadmap_button.clicked.connect(self.generate_roadmap)
         self.find_path_button.clicked.connect(self.find_path)
         self.perlin_noise_checkbox.stateChanged.connect(self.toggle_perlin_options)
@@ -175,6 +176,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
             elif self.draw_action == 'Free':
                 self.roadmap.occupancy_graph[r,c] = 0
                 self.roadmap.graph[r,c].occupied = False
+                self.roadmap.graph[r,c].goal = False
+                self.roadmap.graph[r,c].start = False
+                self.roadmap.start_idx = np.array([[-1],[-1]])
+                self.roadmap.goal_idx = np.array([[-1],[-1]])
             elif self.draw_action == 'Start':
                 self.roadmap.graph[r,c].start = True
                 if np.sum(self.roadmap.start_idx)>=0:
@@ -310,20 +315,24 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.diag_val = self.allow_diagonals_checkbox.isChecked()
         self.path = np.zeros([2,1])-1
         self.history = None
-        log(f'Finding neighbors...')
+        log(f'Generating roadmap...')
+        tic = time.time()
         self.roadmap.init_roadmap()
         self.roadmap.set_neighbors(diagonals=self.diag_val)
-        log(f'Done finding neighbors...')
+        toc = time.time()
+        log(f'Roadmap generated in {toc-tic} seconds!')
         self.update_canvas()
 
     def redraw_graph(self):
         self.grid_size = self.grid_size_spinbox.value()
         self.canvas_label.grid_size = self.grid_size
+        log(f'Creating new graph with shape: {self.grid_size} {self.grid_size}')
 
         self.path = np.zeros([2,1])-1
         self.history = None
         self.roadmap = rb.RoadmapBuilder()
-        self.roadmap.construct_square(self.grid_size)
+        self.square_size = min([self.canvas_label.geometry().width(),self.canvas_label.geometry().height()])
+        self.roadmap.construct_square(self.grid_size,self.square_size)
         
         self.roadmap.clear_obstacles()
 
