@@ -177,23 +177,25 @@ class RoadmapBuilder(FilePaths):
             for i in range(0,r):
                 for j in range(0,c):
                     if self.graph[i,j].occupied:
-                        coord = self.graph[i,j].coord
+                        obs_coord = self.graph[i,j].coord * self.tile_size
                         
-                        # data = copy.deepcopy()
-                        # data = data.astype(np.double)
-                        # data_p = data.ctypes.data_as(self.c_float_p)
+                        obs = Polygon()
+                        obs.rectangle(obs_coord,obs_coord+self.tile_size)
+                        data = obs.vertices
+                        data = data.astype(np.double)
+                        data_p = data.ctypes.data_as(self.c_float_p)
 
-                        # data2 = copy.deepcopy()
-                        # data2 = data2.astype(np.double)
-                        # data_p2 = data2.ctypes.data_as(self.c_float_p)
 
-                        # # get two polygons
-                        # # collision check
-                        # # if not in collision, translate the agent
-                        # # collision check
-                        # # repeat
+                        agent_coord = interp[:,step_idx].reshape(2,1) * self.tile_size
+                        agent = Polygon()
+                        agent.rectangle(agent_coord,agent_coord+self.tile_size)
+                        data2 = agent.vertices
+                        data2 = data2.astype(np.double)
+                        data_p2 = data2.ctypes.data_as(self.c_float_p)
 
                         # # C Function call in python
-                        # res = self.fun.polygon_is_collision(data_p,2,len(self.sprite.polys[self.sprite.idx].vertices[0,:]),data_p2,2,len(obs_check.vertices[0,:]))
+                        res = self.fun.polygon_is_collision(data_p,2,4,data_p2,2,4)
+                        if res:
+                            return True
                     self.collision_calls += 1
         return False
