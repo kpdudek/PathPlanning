@@ -88,6 +88,8 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.draw_checkbox.stateChanged.connect(self.toggle_paint_tool_frame)
         self.toggle_paint_tool_frame()
         self.animate_button.clicked.connect(self.animate_history)
+        self.cancel_roadmap_button.clicked.connect(self.set_cancel_roadmap_flag)
+        self.pause_roadmap_button.clicked.connect(self.set_pause_roadmap_flag)
 
         self.debug_mode_checkbox.stateChanged.connect(self.toggle_debug_mode)
         self.toggle_debug_mode()
@@ -140,6 +142,21 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
             self.paint_tool_frame.show()
         else:
             self.paint_tool_frame.hide()
+
+    def set_cancel_roadmap_flag(self):
+        self.roadmap.cancel = True
+        self.roadmap_progress_bar.setValue(0)
+        log("Canceling roadmap generation...")
+
+    def set_pause_roadmap_flag(self):
+        if self.roadmap.pause:
+            log("Resuming roadmap generation...")
+            self.roadmap.pause = False
+            self.pause_roadmap_button.setText('Pause')
+        else:
+            log("Pausing roadmap generation...")
+            self.roadmap.pause = True
+            self.pause_roadmap_button.setText('Resume')
     
     def get_paint_type(self):
         for widget in self.paint_tool_frame.children():
@@ -257,72 +274,6 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         except:
             pass
 
-    def find_path(self):
-        if np.sum(self.roadmap.start_idx)<0:
-            log(f'Assign a start node!')
-            return
-        if np.sum(self.roadmap.goal_idx)<0:
-            log(f'Assign a goal node!')
-            return
-        
-        try:
-            log(f'Beginning graph search...')
-            self.astar.reset(self.roadmap)
-
-            si,sj = self.roadmap.start_idx
-            gi,gj = self.roadmap.goal_idx
-            start_idx = self.roadmap.graph[int(si),int(sj)].idx
-            goal_idx = self.roadmap.graph[int(gi),int(gj)].idx
-            self.path,self.history = self.astar.get_plan(start_idx,goal_idx)
-            
-            self.painter = QtGui.QPainter(self.canvas_label.pixmap())
-            self.draw_path()
-            self.painter.end()
-        except Exception as e:
-            log(f"Unable to find path. Likely one doesn't exist!")
-            log(f'Find path call failed due to exception: {e}')
-
-    def animate_history(self):
-        if self.history:
-            throttle = self.playback_speed_spinbox.value()
-            self.painter = QtGui.QPainter(self.canvas_label.pixmap())
-            size = self.square_size/self.grid_size
-
-            self.project_tab.setEnabled(False)
-            self.draw_grid()
-            self.draw_connections()
-            self.update()
-            QGuiApplication.processEvents()
-            for node in self.history:
-                coord = self.roadmap.roadmap[node].coord
-                x = int(coord[0]); y = int(coord[1])
-                rec = QRect(x*size,y*size,size,size)
-                pen,brush = self.search_history()
-                self.painter.setPen(pen)
-                self.painter.setBrush(brush)
-                self.painter.drawRect(rec)
-                self.update()
-                time.sleep(throttle)
-                QGuiApplication.processEvents()
-            self.draw_path()
-            self.update()
-            QGuiApplication.processEvents()
-
-            self.painter.end()
-            self.project_tab.setEnabled(True)
-
-    def generate_roadmap(self):
-        self.diag_val = self.allow_diagonals_checkbox.isChecked()
-        self.path = np.zeros([2,1])-1
-        self.history = None
-        log(f'Generating roadmap...')
-        tic = time.time()
-        self.roadmap.init_roadmap()
-        self.roadmap.set_neighbors(diagonals=self.diag_val)
-        toc = time.time()
-        log(f'Roadmap generated in {toc-tic} seconds!')
-        self.update_canvas()
-
     def redraw_graph(self):
         self.grid_size = self.grid_size_spinbox.value()
         self.canvas_label.grid_size = self.grid_size
@@ -330,7 +281,11 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
         self.path = np.zeros([2,1])-1
         self.history = None
+
+        # TODO: Dont re-instatiate. Just make a reset() method in RoadmapBuilder
         self.roadmap = rb.RoadmapBuilder()
+        self.roadmap.roadmap_progress.connect(self.update_roadmap_progress)
+
         self.square_size = min([self.canvas_label.geometry().width(),self.canvas_label.geometry().height()])
         self.roadmap.construct_square(self.grid_size,self.square_size)
         
@@ -347,7 +302,28 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
         self.roadmap.init_roadmap()
         self.update_canvas()
+    
+    def update_roadmap_progress(self,percent):
+        if self.roadmap.cancel:
+            self.roadmap_progress_bar.setValue(0)
+            return
+        
+        val = int(percent*100)
+        self.roadmap_progress_bar.setValue(val)
+        
+        if val == 100:
+            self.update_canvas()
 
+    def generate_roadmap(self):
+
+        self.diag_val = self.allow_diagonals_checkbox.isChecked()
+        self.collision_checking_val = self.collision_checking_checkbox.isChecked()
+        self.path = np.zeros([2,1])-1
+        self.history = None
+        
+        self.roadmap.init_roadmap()
+        self.roadmap.set_neighbors(diagonals=self.diag_val,collision_checking=self.collision_checking_val)
+            
     def draw_grid(self):
         # draw the checkerboard based on numpy arrays
         size = self.square_size/self.grid_size
@@ -384,7 +360,51 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                     rec = QRect(i*size,j*size,size,size)
                     self.painter.drawRect(rec)
 
-        # log(f"Roadmap length: {len(self.roadmap.roadmap)}")
+    def draw_connections(self):
+        if len(self.roadmap.roadmap) > 0:
+            size = self.square_size/self.grid_size
+            for node in self.roadmap.roadmap:
+                x,y = node.coord
+                tx = int(x)*size + size/3.
+                ty = int(y)*size + size/2.
+                x = int(x)*size + (size/2.); y = int(y)*size + (size/2.)
+                if self.debug_mode:
+                    pen,brush = self.text_color()
+                    self.painter.setPen(pen)
+                    self.painter.setBrush(brush)
+                    self.painter.drawText(tx,ty,f'{node.idx}')
+                for neighbor_idx in node.neighbors:
+                    x2,y2 = self.roadmap.roadmap[neighbor_idx].coord
+                    x2 = int(x2)*size + (size/2); y2 = int(y2)*size + (size/2)
+                    pen,brush = self.connection_line()
+                    self.painter.setPen(pen)
+                    self.painter.setBrush(brush)
+                    self.painter.drawLine(x,y,x2,y2)
+    
+    def find_path(self):
+        if np.sum(self.roadmap.start_idx)<0:
+            log(f'Assign a start node!')
+            return
+        if np.sum(self.roadmap.goal_idx)<0:
+            log(f'Assign a goal node!')
+            return
+        
+        try:
+            log(f'Beginning graph search...')
+            self.astar.reset(self.roadmap)
+
+            si,sj = self.roadmap.start_idx
+            gi,gj = self.roadmap.goal_idx
+            start_idx = self.roadmap.graph[int(si),int(sj)].idx
+            goal_idx = self.roadmap.graph[int(gi),int(gj)].idx
+            self.path,self.history = self.astar.get_plan(start_idx,goal_idx)
+            
+            self.painter = QtGui.QPainter(self.canvas_label.pixmap())
+            self.draw_path()
+            self.painter.end()
+        except Exception as e:
+            log(f"Unable to find path. Likely one doesn't exist!")
+            log(f'Find path call failed due to exception: {e}')
 
     def draw_path(self):
         if len(self.path[0,:]) > 0:
@@ -411,27 +431,35 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                     self.painter.drawLine(x,y,x2,y2)
             # self.painter.end()
         self.update()
-
-    def draw_connections(self):
-        if len(self.roadmap.roadmap) > 0:
+    
+    def animate_history(self):
+        if self.history:
+            throttle = self.playback_speed_spinbox.value()
+            self.painter = QtGui.QPainter(self.canvas_label.pixmap())
             size = self.square_size/self.grid_size
-            for node in self.roadmap.roadmap:
-                x,y = node.coord
-                tx = int(x)*size + size/3.
-                ty = int(y)*size + size/2.
-                x = int(x)*size + (size/2.); y = int(y)*size + (size/2.)
-                if self.debug_mode:
-                    pen,brush = self.text_color()
-                    self.painter.setPen(pen)
-                    self.painter.setBrush(brush)
-                    self.painter.drawText(tx,ty,f'{node.idx}')
-                for neighbor_idx in node.neighbors:
-                    x2,y2 = self.roadmap.roadmap[neighbor_idx].coord
-                    x2 = int(x2)*size + (size/2); y2 = int(y2)*size + (size/2)
-                    pen,brush = self.connection_line()
-                    self.painter.setPen(pen)
-                    self.painter.setBrush(brush)
-                    self.painter.drawLine(x,y,x2,y2)
+
+            self.project_tab.setEnabled(False)
+            self.draw_grid()
+            self.draw_connections()
+            self.update()
+            QGuiApplication.processEvents()
+            for node in self.history:
+                coord = self.roadmap.roadmap[node].coord
+                x = int(coord[0]); y = int(coord[1])
+                rec = QRect(x*size,y*size,size,size)
+                pen,brush = self.search_history()
+                self.painter.setPen(pen)
+                self.painter.setBrush(brush)
+                self.painter.drawRect(rec)
+                self.update()
+                time.sleep(throttle)
+                QGuiApplication.processEvents()
+            self.draw_path()
+            self.update()
+            QGuiApplication.processEvents()
+
+            self.painter.end()
+            self.project_tab.setEnabled(True)
 
     def update_canvas(self):
         self.background_size = np.array([[self.canvas_label.geometry().width()],[self.canvas_label.geometry().height()]])

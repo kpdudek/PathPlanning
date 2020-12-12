@@ -5,6 +5,8 @@ import numpy as np
 import math, sys
 import ctypes
 
+import threading
+
 from lib.Noise import *
 from lib.Utils import *
 from lib.Geometry import *
@@ -34,7 +36,9 @@ class Node(object):
         return node_type
 
 # Class that builds a 2D roadmap
-class RoadmapBuilder(FilePaths):
+class RoadmapBuilder(QWidget,FilePaths):
+    roadmap_progress = pyqtSignal(float)
+
     def __init__(self):
         super().__init__()        
         self.roadmap = []
@@ -50,6 +54,10 @@ class RoadmapBuilder(FilePaths):
 
         self.epsilon = 5
         self.collision_calls = 0
+
+        self.worker = threading.Thread(target=self.neighbor_worker)
+        self.cancel = False
+        self.pause = False
 
         # C library for collision checking
         self.c_float_p = ctypes.POINTER(ctypes.c_double)
@@ -100,20 +108,47 @@ class RoadmapBuilder(FilePaths):
                     self.graph[i,j].idx = None
                     self.graph[i][j].occupied = True
     
-    def set_neighbors(self,diagonals=True):
-        self.collision_calls = 0
+    def set_neighbors(self,diagonals=True,collision_checking=True):
+        self.diagonals = diagonals
+        self.collision_checking = collision_checking
 
+        if self.worker.is_alive():
+            log('Already generating roadmap')
+        # self.worker = threading.Thread(target=self.neighbor_worker)
+        else:
+            self.worker = threading.Thread(target=self.neighbor_worker)
+            self.worker.start()
+    
+    def neighbor_worker(self):
+        self.cancel = False
+
+        log(f'Generating roadmap...')
+        tic = time.time()
+
+        self.collision_calls = 0
         r,c = self.graph.shape
         log(f'Generating neighbors for graph with shape: {r} {c}')
+        nodes = float(r*c)
+        loop_num = 0.0
+        percent = 0.0
+        self.roadmap_progress.emit(percent)
         for i in range(0,r):
             for j in range(0,c):
+                if self.cancel:
+                    log('Roadmap generation canceled!')
+                    return
+                while self.pause:
+                    if self.cancel:
+                        log('Roadmap generation canceled!')
+                        return
+                    pass
                 # reset all node elements except for its graph coordinate
                 self.graph[i,j].neighbors = []
                 self.graph[i,j].neighbors_cost = []
                 self.graph[i,j].backpointer = None
                 self.graph[i,j].backpointer_cost = None
 
-                # Generate a list of lists where each sub list is the vector from the current node to its
+                # Generate a list of lists where each sub list is a vector from the current tile to its
                 # prospective neighbor
                 # TODO: assign random neighbors that are not immediate
                 neighbor_list = []
@@ -121,7 +156,7 @@ class RoadmapBuilder(FilePaths):
                     for n in range(-1,2):
                         if (k == 0) and (n == 0):
                             pass
-                        elif (k != 0) and (n != 0) and (not diagonals):
+                        elif (k != 0) and (n != 0) and (not self.diagonals):
                             pass
                         else:
                             neighbor_list.append([k,n])
@@ -133,15 +168,24 @@ class RoadmapBuilder(FilePaths):
                 for neighbor in neighbor_list:
                     if not self.graph[i,j].occupied:
                         idx = self.graph[i,j].idx
-                        # immediate neighbors
                         if (i+neighbor[0] < r) and (i+neighbor[0] >= 0) and (j+neighbor[1] < c) and (j+neighbor[1] >= 0):
                             if not self.graph[i+neighbor[0],j+neighbor[1]].occupied:
                                 neighbor_idx = self.graph[i+neighbor[0],j+neighbor[1]].idx
-                                if not self.collision_check(idx,neighbor_idx):
+
+                                if self.collision_checking:
+                                    if not self.collision_check(idx,neighbor_idx):
+                                        self.roadmap[idx].neighbors.append(neighbor_idx)
+                                        dist = self.euclidian_distance(idx,neighbor_idx)
+                                        self.roadmap[idx].neighbors_cost.append(dist)
+                                else:
                                     self.roadmap[idx].neighbors.append(neighbor_idx)
                                     dist = self.euclidian_distance(idx,neighbor_idx)
                                     self.roadmap[idx].neighbors_cost.append(dist)
-        
+                loop_num += 1.0
+                percent = loop_num/nodes
+                self.roadmap_progress.emit(percent)
+        toc = time.time()
+        log(f'Roadmap generated in {toc-tic} seconds!')
         log(f'Collision check calls made: {self.collision_calls}')
         log(f'Epsilon value for edge discretization: {self.epsilon}')
 

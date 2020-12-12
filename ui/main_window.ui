@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1121</width>
-    <height>891</height>
+    <width>1137</width>
+    <height>944</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -126,7 +126,7 @@
              <number>128</number>
             </property>
             <property name="value">
-             <number>15</number>
+             <number>10</number>
             </property>
            </widget>
           </item>
@@ -469,7 +469,22 @@
           <number>2</number>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
-          <item row="2" column="0">
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="collision_checking_checkbox">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Collision Checking</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
            <widget class="QCheckBox" name="allow_diagonals_checkbox">
             <property name="maximumSize">
              <size>
@@ -488,9 +503,19 @@
             <property name="text">
              <string>Allow Diagonals</string>
             </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
-          <item row="0" column="0">
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2">
            <widget class="QLabel" name="label_8">
             <property name="font">
              <font>
@@ -505,14 +530,31 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="Line" name="line">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+          <item row="7" column="0">
+           <widget class="QPushButton" name="pause_roadmap_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Pause</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="7" column="1">
+           <widget class="QPushButton" name="cancel_roadmap_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Cancel</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
            <widget class="QPushButton" name="generate_roadmap_button">
             <property name="font">
              <font>
@@ -524,6 +566,19 @@
             </property>
             <property name="text">
              <string>Generate Roadmap</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QProgressBar" name="roadmap_progress_bar">
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="textVisible">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -542,6 +597,21 @@
           <number>2</number>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
+          <item row="5" column="0" colspan="2">
+           <widget class="QPushButton" name="animate_button">
+            <property name="font">
+             <font>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="toolTip">
+             <string>Animate the search process by displaying the planners steps visually on the canvas.</string>
+            </property>
+            <property name="text">
+             <string>Animate</string>
+            </property>
+           </widget>
+          </item>
           <item row="4" column="1">
            <widget class="QDoubleSpinBox" name="playback_speed_spinbox">
             <property name="font">
@@ -557,21 +627,6 @@
             </property>
             <property name="value">
              <double>0.050000000000000</double>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="label_5">
-            <property name="font">
-             <font>
-              <pointsize>10</pointsize>
-             </font>
-            </property>
-            <property name="text">
-             <string>Playback Speed:</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -612,18 +667,18 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QPushButton" name="animate_button">
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_5">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
-            <property name="toolTip">
-             <string>Animate the search process by displaying the planners steps visually on the canvas.</string>
-            </property>
             <property name="text">
-             <string>Animate</string>
+             <string>Playback Speed:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
            </widget>
           </item>
@@ -747,7 +802,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1121</width>
+     <width>1137</width>
      <height>21</height>
     </rect>
    </property>
@@ -768,7 +823,6 @@
   <tabstop>radioButton_4</tabstop>
   <tabstop>radioButton_3</tabstop>
   <tabstop>allow_diagonals_checkbox</tabstop>
-  <tabstop>generate_roadmap_button</tabstop>
   <tabstop>find_path_button</tabstop>
   <tabstop>playback_speed_spinbox</tabstop>
   <tabstop>animate_button</tabstop>
