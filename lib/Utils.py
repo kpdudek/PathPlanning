@@ -86,8 +86,8 @@ def log(text, color=None):
     
     # Write log message to the log file
     file_paths = FilePaths()
-    with open('%slogs.txt'%(file_paths.user_path),'a') as fp:
-        if not os.stat('%slogs.txt'%(file_paths.user_path)).st_size == 0: # if file isn't empty
+    with open(f'{file_paths.user_path}logs.txt','a') as fp:
+        if not os.stat(f'{file_paths.user_path}logs.txt').st_size == 0: # if file isn't empty
             if text == 'Game started...':
                 fp.write('\n\n\n'+ log_msg)
             else:
@@ -98,12 +98,3 @@ def log(text, color=None):
         fp.close()
     except:
         print('Error closing log file...')
-
-def hide_all_widgets(layout):
-    items = (layout.itemAt(i) for i in range(layout.count())) 
-    for item in items:
-        item = item.widget()
-        try:
-            item.hide()
-        except:
-            pass

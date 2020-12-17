@@ -37,7 +37,7 @@ class Node(object):
 
 # Class that builds a 2D roadmap
 class RoadmapBuilder(QWidget,FilePaths):
-    roadmap_progress = pyqtSignal(float)
+    roadmap_progress = pyqtSignal(float,float)
 
     def __init__(self):
         super().__init__()        
@@ -63,7 +63,7 @@ class RoadmapBuilder(QWidget,FilePaths):
         self.c_float_p = ctypes.POINTER(ctypes.c_double)
         self.fun = ctypes.CDLL(f'{self.user_path}lib/{self.cc_lib_path}') # Or full path to file
         self.fun.polygon_is_collision.argtypes = [self.c_float_p,ctypes.c_int,ctypes.c_int,self.c_float_p,ctypes.c_int,ctypes.c_int] 
-    
+
     def set_geometry(self):
         self.geom = Polygon()
         self.geom.unit_circle(4,10)
@@ -131,7 +131,8 @@ class RoadmapBuilder(QWidget,FilePaths):
         nodes = float(r*c)
         loop_num = 0.0
         percent = 0.0
-        self.roadmap_progress.emit(percent)
+        self.roadmap_progress.emit(percent,-1)
+        loop_times = np.array([])
         for i in range(0,r):
             for j in range(0,c):
                 if self.cancel:
@@ -142,6 +143,7 @@ class RoadmapBuilder(QWidget,FilePaths):
                         log('Roadmap generation canceled!')
                         return
                     pass
+                loop_tic = time.time()
                 # reset all node elements except for its graph coordinate
                 self.graph[i,j].neighbors = []
                 self.graph[i,j].neighbors_cost = []
@@ -181,9 +183,20 @@ class RoadmapBuilder(QWidget,FilePaths):
                                     self.roadmap[idx].neighbors.append(neighbor_idx)
                                     dist = self.euclidian_distance(idx,neighbor_idx)
                                     self.roadmap[idx].neighbors_cost.append(dist)
+                loop_toc = time.time()
+
                 loop_num += 1.0
                 percent = loop_num/nodes
-                self.roadmap_progress.emit(percent)
+                remaining_time = (loop_toc-loop_tic)*(nodes-loop_num)
+                if remaining_time > 0:
+                    loop_times = np.append(loop_times,remaining_time)
+
+                if loop_times.shape[0] == 7:
+                    self.roadmap_progress.emit(percent,np.mean(loop_times))
+                    loop_times = np.array([])
+                else:
+                    self.roadmap_progress.emit(percent,-1)
+                
         toc = time.time()
         log(f'Roadmap generated in {toc-tic} seconds!')
         log(f'Collision check calls made: {self.collision_calls}')

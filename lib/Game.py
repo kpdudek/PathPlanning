@@ -6,6 +6,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 import random, sys, os, math, time
 import numpy as np
+import json
 
 from lib.Utils import *
 from lib.PaintUtils import *
@@ -75,8 +76,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.height = self.screen_height* (7./8.)
         self.setGeometry(math.floor((self.screen_width-self.width)/2), math.floor((self.screen_height-self.height)/2), self.width, self.height) 
 
-        self.grid_size = self.grid_size_spinbox.value()
-
+        # UI element connections
         self.generate_graph_button.clicked.connect(self.redraw_graph)
         self.grid_size_spinbox.valueChanged.connect(self.redraw_graph)
         self.generate_roadmap_button.clicked.connect(self.generate_roadmap)
@@ -90,10 +90,25 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.animate_button.clicked.connect(self.animate_history)
         self.cancel_roadmap_button.clicked.connect(self.set_cancel_roadmap_flag)
         self.pause_roadmap_button.clicked.connect(self.set_pause_roadmap_flag)
-
         self.debug_mode_checkbox.stateChanged.connect(self.toggle_debug_mode)
         self.toggle_debug_mode()
 
+        # Menu bar action connections
+        self.quit_action.triggered.connect(self.quit_game)
+        self.save_map_action.triggered.connect(self.save_map)
+        self.save_map_as_action.triggered.connect(self.save_map_as)
+        self.load_map_action.triggered.connect(self.load_map)
+
+        # Game attributes
+        self.grid_size = self.grid_size_spinbox.value()
+        self.path = np.zeros([2,1])-1
+        self.history = None
+        self.prev_tile = np.zeros([2,1])-1
+
+        self.map_name = None
+        self.map_saved = False
+
+        # Canvas creation
         self.canvas_label = Canvas(self.grid_size)
         self.verticalLayout_6.addWidget(self.canvas_label)
         self.canvas = QPixmap(self.width/2.,self.height)
@@ -102,16 +117,13 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.canvas_label.tile_drag.connect(self.tile_drag_action)
         self.canvas_label.tile_release.connect(self.tile_release_action)
 
-        self.path = np.zeros([2,1])-1
-        self.history = None
+        # Create AStar planner object
         self.redraw_graph()
         self.astar = AStar(self.roadmap,self.debug_mode)
-        self.prev_tile = np.zeros([2,1])-1
-
+        
         # Show main window
         self.show()
         self.update()
-
         self.update_canvas()
 
     def toggle_perlin_options(self):
@@ -157,6 +169,29 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
             log("Pausing roadmap generation...")
             self.roadmap.pause = True
             self.pause_roadmap_button.setText('Resume')
+    
+    def quit_game(self):
+        self.close()
+
+    def load_map(self):
+        fname = QFileDialog.getOpenFileName(self, 'Open file',f'{self.user_path}maps/',"Map Files (*.mp)")[0]
+
+    def save_map(self):
+        name = QFileDialog.getSaveFileName(self, 'Save File',f'{self.user_path}maps/')[0]
+        fp = open(name,'w')
+        save_data = {}
+        r,c = self.roadmap.occupancy_graph.shape
+        save_data.update({'shape':[r,c]})
+        values = []
+        for i in range(0,r):
+            for j in range(0,c):
+                values.append(str(self.roadmap.occupancy_graph[i,j]))
+        save_data.update({'values':values})
+        json.dump(save_data,fp)
+        fp.close()
+
+    def save_map_as(self):
+        pass
     
     def get_paint_type(self):
         for widget in self.paint_tool_frame.children():
@@ -303,19 +338,22 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.roadmap.init_roadmap()
         self.update_canvas()
     
-    def update_roadmap_progress(self,percent):
+    def update_roadmap_progress(self,percent,remaining_time):
         if self.roadmap.cancel:
             self.roadmap_progress_bar.setValue(0)
             return
         
         val = int(percent*100)
         self.roadmap_progress_bar.setValue(val)
+
+        if remaining_time > 0:
+            self.remaining_time_label.setText("Remaining time: %.2f seconds..."%remaining_time)
         
         if val == 100:
+            self.remaining_time_label.setText("Remaining time: 0.0 seconds...")
             self.update_canvas()
 
     def generate_roadmap(self):
-
         self.diag_val = self.allow_diagonals_checkbox.isChecked()
         self.collision_checking_val = self.collision_checking_checkbox.isChecked()
         self.path = np.zeros([2,1])-1
