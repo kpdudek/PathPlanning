@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1142</width>
-    <height>947</height>
+    <height>975</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,6 +15,36 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="2">
+     <widget class="QFrame" name="frame_7">
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QPushButton" name="redraw_roadmap_button">
+         <property name="font">
+          <font>
+           <pointsize>10</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Update Canvas</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
     <item row="0" column="0">
      <widget class="QFrame" name="project_tab">
       <property name="sizePolicy">
@@ -612,18 +642,33 @@
           <number>2</number>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="5" column="0" colspan="2">
-           <widget class="QPushButton" name="animate_button">
+          <item row="0" column="0" colspan="2">
+           <widget class="QLabel" name="label_9">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <italic>true</italic>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Graph Search:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QPushButton" name="find_path_button">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
             <property name="toolTip">
-             <string>Animate the search process by displaying the planners steps visually on the canvas.</string>
+             <string>Find a path between the start and goal tile if one exists.</string>
             </property>
             <property name="text">
-             <string>Animate</string>
+             <string>Find Path</string>
             </property>
            </widget>
           </item>
@@ -645,40 +690,18 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QPushButton" name="find_path_button">
+          <item row="5" column="0" colspan="2">
+           <widget class="QPushButton" name="animate_button">
             <property name="font">
              <font>
               <pointsize>10</pointsize>
              </font>
             </property>
             <property name="toolTip">
-             <string>Find a path between the start and goal tile if one exists.</string>
+             <string>Animate the search process by displaying the planners steps visually on the canvas.</string>
             </property>
             <property name="text">
-             <string>Find Path</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label_9">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <italic>true</italic>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Graph Search:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <string>Animate</string>
             </property>
            </widget>
           </item>
@@ -694,6 +717,13 @@
             </property>
             <property name="alignment">
              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>

@@ -92,6 +92,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.pause_roadmap_button.clicked.connect(self.set_pause_roadmap_flag)
         self.debug_mode_checkbox.stateChanged.connect(self.toggle_debug_mode)
         self.toggle_debug_mode()
+        self.redraw_roadmap_button.clicked.connect(self.update_canvas)
 
         # Menu bar action connections
         self.quit_action.triggered.connect(self.quit_game)
@@ -175,10 +176,29 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
 
     def load_map(self):
         fname = QFileDialog.getOpenFileName(self, 'Open file',f'{self.user_path}maps/',"Map Files (*.mp)")[0]
+        fp = open(fname,'r')
+        data = json.load(fp)
+        map_name = fname.split(self.path_delim)[-1]
+        shape = data['shape']
+        values = data['values']
+        log(f"Loading saved map: {map_name}")
+        log(f"Graph shape: {shape[0]} {shape[1]}")
+        self.grid_size_spinbox.setValue(shape[0])
+
+        idx = 0
+        occupancy_graph = np.zeros([shape[0],shape[1]])
+        for i in range(0,shape[0]):
+            for j in range(0,shape[1]):
+                occupancy_graph[i,j] = values[idx]
+                idx += 1
+        
+        self.roadmap.occupancy_graph = occupancy_graph
+        self.roadmap.init_roadmap()
+        self.update_canvas()
 
     def save_map(self):
-        name = QFileDialog.getSaveFileName(self, 'Save File',f'{self.user_path}maps/')[0]
-        fp = open(name,'w')
+        fname = QFileDialog.getSaveFileName(self, 'Save File',f'{self.user_path}maps/')[0]
+        fp = open(fname,'w')
         save_data = {}
         r,c = self.roadmap.occupancy_graph.shape
         save_data.update({'shape':[r,c]})
@@ -347,10 +367,10 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.roadmap_progress_bar.setValue(val)
 
         if remaining_time > 0:
-            self.remaining_time_label.setText("Remaining time: %.2f seconds..."%remaining_time)
+            self.remaining_time_label.setText("Remaining time:\n%.2f seconds..."%remaining_time)
         
         if val == 100:
-            self.remaining_time_label.setText("Remaining time: 0.0 seconds...")
+            self.remaining_time_label.setText("Remaining time:\n0.0 seconds...")
             self.update_canvas()
 
     def generate_roadmap(self):

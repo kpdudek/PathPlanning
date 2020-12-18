@@ -88,6 +88,7 @@ class RoadmapBuilder(QWidget,FilePaths):
             tmp = random_noise(size,cutoff=cutoff)
         
         self.occupancy_graph = np.logical_or(self.occupancy_graph,tmp) 
+        self.occupancy_graph = self.occupancy_graph.astype('float64')
 
     def clear_obstacles(self):
         self.occupancy_graph = None

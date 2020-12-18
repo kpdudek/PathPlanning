@@ -19,10 +19,12 @@ class FilePaths():
         user_path = str(pathlib.Path().absolute()) + '\\'
         lib_path = user_path + 'lib\\'
         cc_lib_path = 'cc_lib.dll'
+        path_delim = '/'
     elif sys.platform == 'linux':    
         user_path = str(pathlib.Path().absolute()) + '/'
         lib_path = user_path + 'lib/'
         cc_lib_path = 'cc_lib.so'
+        path_delim = '/'
     else:
         raise Error('OS not recognized!')
 
