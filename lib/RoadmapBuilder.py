@@ -52,7 +52,7 @@ class RoadmapBuilder(QWidget,FilePaths):
         self.start_idx = np.zeros([2,1]) - 1
         self.goal_idx = np.zeros([2,1]) - 1
 
-        self.epsilon = 5
+        self.epsilon = 3
         self.collision_calls = 0
 
         self.worker = threading.Thread(target=self.neighbor_worker)

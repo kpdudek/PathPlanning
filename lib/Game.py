@@ -230,8 +230,12 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
     def tile_click_action(self,r,c):
         # If drawing is enabled
         if self.draw_checkbox.isChecked():
-            self.painter = QtGui.QPainter(self.canvas_label.pixmap())
             self.get_paint_type()
+            
+            if (self.draw_action == 'Start' and self.start_staged) or (self.draw_action == 'Goal' and self.goal_staged):
+                return
+            
+            self.painter = QtGui.QPainter(self.canvas_label.pixmap())
             if self.draw_action == 'Free':
                 pen,brush = self.free_space()
             else:
@@ -259,6 +263,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                     prev_c = int(self.roadmap.start_idx[1])
                     self.roadmap.graph[prev_r,prev_c].start = False
                 self.roadmap.start_idx = np.array([[r],[c]])
+                self.start_staged = True
             elif self.draw_action == 'Goal':
                 self.roadmap.graph[r,c].goal = True
                 if np.sum(self.roadmap.goal_idx)>=0:
@@ -266,6 +271,7 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
                     prev_c = int(self.roadmap.goal_idx[1])
                     self.roadmap.graph[prev_r,prev_c].goal = False
                 self.roadmap.goal_idx = np.array([[r],[c]])
+                self.goal_staged = True
             self.painter.end()
 
         log(f'\tNode type: {self.roadmap.graph[r,c].node_type()}')
@@ -536,10 +542,17 @@ class Game(QMainWindow,FilePaths,ElementColors,PaintBrushes):
         self.painter.setBrush(brush)
         self.painter.drawRect(rec)
 
+        self.path = np.zeros([2,1])-1
+        self.history = None
+        
         self.draw_grid()
         self.draw_connections()
         self.draw_path()
 
+        self.start_staged = False
+        self.goal_staged = False
+
         self.painter.end()
+        log(f"Canvas updated...")
 
 
